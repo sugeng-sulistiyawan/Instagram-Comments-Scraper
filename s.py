@@ -1,29 +1,59 @@
-from instascrape import Post
-import time
+import instaloader
+import json
+import re
+from datetime import datetime
 
-# URL dari postingan Instagram
-url = "https://www.instagram.com/p/DCEkLYsS_Af/"
+# Buat objek Instaloader
+L = instaloader.Instaloader()
 
-# Buat objek Post
-post = Post(url)
+# Muat sesi dari file
+L.load_session_from_file('sugengsulistiyawan')
 
-try:
-    # Muat data dari URL
-    post.scrape()
+# Daftar shortcodes dengan label
+shortcodes = {
+    'DCEjnM_yHDk': 'ILM SMA',
+    'DCEkLYsS_Af': 'ILM SMP',
+    'DCEiS3MSsWn': 'POSTER SMA',
+    'DCEis1CSjm6': 'POSTER SMP',
+}
+
+def is_bot(username):
+    # Simple heuristic to check if a username is likely a bot
+    bot_patterns = [
+        r'\d{4,}',  # Contains 4 or more consecutive digits
+        r'(.)\1{2,}',  # Contains 3 or more consecutive identical characters
+        r'bot',  # Contains the word 'bot'
+        r'test',  # Contains the word 'test'
+        r'private',  # Contains the word 'private'
+    ]
+    for pattern in bot_patterns:
+        if re.search(pattern, username.lower()):
+            return True
+    return False
+
+for shortcode, label in shortcodes.items():
+    # Ambil postingan menggunakan shortcode
+    post = instaloader.Post.from_shortcode(L.context, shortcode)
 
     # Ambil semua komentar
-    comments = post.comments
+    comments = post.get_comments()
 
-    # Cetak semua komentar
+    # Simpan komentar ke dalam list
+    comments_list = []
     for comment in comments:
-        print(comment['text'])
+        # Konversi timestamp ke zona waktu UTC+7
+        timestamp_utc = comment.created_at_utc
+        print(f"{comment.owner.username}: {comment.text} - {timestamp_utc}")
+        comments_list.append({
+            'username': f'{comment.owner.username}',
+            'text': f'{comment.text}',
+            'timestamp': f'{timestamp_utc}',
+            'is_bot': is_bot(comment.owner.username),
+        })
 
-    # Jika Anda ingin mengambil lebih banyak komentar, Anda bisa menggunakan pagination
-    while post.has_next_page:
-        time.sleep(2)  # Tambahkan jeda untuk menghindari rate limiting
-        post.scrape_comments()
-        comments = post.comments
-        for comment in comments:
-            print(comment['text'])
-except ValueError as e:
-    print(f"Error: {e}")
+    # Simpan hasil ke file JSON
+    output_file = f'{label}.json'
+    with open(output_file, 'w') as f:
+        json.dump(comments_list, f, indent=4)
+
+    print(f"Comments have been saved to {output_file}")

@@ -5,3 +5,5 @@ __pycache__/
 chromedriver_linux64.zip
 .venv
 .idea
+
+/*.json

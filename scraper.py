@@ -18,14 +18,14 @@ to use something different to use that link through Python Selenium. Either we c
 or name selectors to use that.
 """
 username=driver.find_element(By.NAME,"username")
-username.send_keys ('USER-NAME')
+username.send_keys('USERNAME')
 
 password =driver.find_element (By.NAME,"password")
 password.send_keys('PASSWORD')
 password.submit()
 
 
-time.sleep(10)
+time.sleep(30)
 
 
 
@@ -66,8 +66,8 @@ for c in comment:
 
 user_names.pop(0)
 user_comments.pop(0)
-# print(user_names)
-# print(user_comments)
+print(user_names)
+print(user_comments)
 import excel_exporter
 excel_exporter.export(user_names, user_comments)
 

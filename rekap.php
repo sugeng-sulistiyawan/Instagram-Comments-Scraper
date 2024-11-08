@@ -37,8 +37,8 @@ function rekap($filename)
         $voteNumber = (int) $vote;
 
         if (isset($valid[$accountName])) {
-            $duplicates[$accountName] ??= '';
-            $duplicates[$accountName] .= "$voteNumber, ";
+            $duplicates[$accountName] ??= $valid[$accountName];
+            $duplicates[$accountName] .= "|$voteNumber";
         } else if ($accountName && $voteNumber) {
             if ($voteNumber > 3 || $voteNumber < 1) {
                 $comment = preg_replace('/[\s+\r\n]/', '', trim($comment));
